@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">AsgChrono</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <string name="clear_button_text">Clear</string>
+    <string name="save_button_text">Clear</string>
+
+    <string name="velocity_title">Velocity [ft/s]:</string>
+    <string name="fire_rate_title">Fire rate [1/min]:</string>
+    <string name="not_analyzed_text">N/A</string>
+
+    <string-array name="tab_names">
+        <item>Measure</item>
+        <item>History</item>
+        <item>Setup</item>
+    </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

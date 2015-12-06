@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:title="Measurement options">
+        <Preference
+            android:key="bb_mass_preference"
+            android:numeric="decimal"
+            android:title="BB mass"
+            android:summary="BB mass in grams" />
+        <Preference
+            android:key="detector_length"
+            android:numeric="decimal"
+            android:title="Detector length"
+            android:summary="Distance between phototransistors in centimeters" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Detection options">
+        <Preference
+            android:key="min_velocity_option"
+            android:numeric="decimal"
+            android:title="Min. velocity"
+            android:summary="Minimum detected velocity in ft/s" />
+        <Preference
+            android:key="max_velocity_option"
+            android:numeric="decimal"
+            android:title="Max. velocity"
+            android:summary="Maximum detected velocity in ft/s" />
+        <Preference
+            android:key="peak_detection_threshold_option"
+            android:numeric="decimal"
+            android:title="Peak detection threshold"
+            android:summary="A value (in multiplies of RMS) above which signal peak is detected" />
+        <Preference
+            android:key="fire_rate_threshold_option"
+            android:numeric="decimal"
+            android:title="Fire rate threshold"
+            android:summary="Maximum time difference between peaks in one fire burst" />
+    </PreferenceCategory>
+
+</PreferenceScreen> 
