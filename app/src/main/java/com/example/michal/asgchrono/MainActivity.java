@@ -10,11 +10,27 @@ import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.util.Log;
+import android.widget.ProgressBar;
 
 public class MainActivity
         extends AppCompatActivity
         implements HistoryFragment.OnFragmentInteractionListener
 {
+    public final String TAG = "AsgChrono";
+
+    /// recorder constants
+    private static final int RECORDER_SAMPLERATE = 44100;
+    private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
+    private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+
+    /// audio recorder members
+    private Thread recordingThread = null;
+    private volatile boolean isRecording = false;
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private AsgCounter mAsgCounter;
@@ -28,13 +44,21 @@ public class MainActivity
         setSupportActionBar(toolbar);
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager)findViewById(R.id.container);
         mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
         mAsgCounter = new AsgCounter();
+        startRecording();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        stopRecording();
     }
 
     @Override
@@ -57,6 +81,78 @@ public class MainActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    int BufferElements2Rec = 1024;  // want to play 2048 (2K) since 2 bytes we use only 1024
+    int BytesPerElement = 2;  // 2 bytes in 16bit format
+
+    private void startRecording() {
+        isRecording = true;
+        recordingThread = new Thread(new Runnable() {
+            public void run() {
+                readAudioData();
+            }
+        }, "AudioRecorder Thread");
+        recordingThread.start();
+    }
+
+    private void stopRecording()  {
+        isRecording = false;
+        Log.i(TAG, "Waiting for recorder thread...");
+        try {
+            recordingThread.join();
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Recorder thread interrupted");
+        }
+
+        Log.i(TAG, "Activity destroyed");
+    }
+
+    volatile float maxVolume;
+
+    private void readAudioData() {
+        AudioRecord recorder;
+        recorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT,
+                RECORDER_SAMPLERATE, RECORDER_CHANNELS,
+                RECORDER_AUDIO_ENCODING, BufferElements2Rec * BytesPerElement);
+
+        if (recorder == null) {
+            Log.e(TAG, "Recorder failed to start");
+            return;
+        }
+
+        recorder.startRecording();
+
+        short sData[] = new short[BufferElements2Rec];
+        Log.i(TAG, "Recording started...");
+
+        while (isRecording) {
+            if (recorder.read(sData, 0, BufferElements2Rec) == AudioRecord.ERROR_INVALID_OPERATION) {
+                Log.e(TAG, "AudioRecord.read failed");
+                break;
+            }
+
+            maxVolume = 0.0f;
+            for (int i = 0; i < BufferElements2Rec; ++i) {
+                float sample = (float)sData[i];
+                if (sample > maxVolume)
+                    maxVolume = sample;
+            }
+            maxVolume /= 32768.0f;
+
+            // update GUI
+            mViewPager.post(new Runnable() {
+                @Override
+                public void run() {
+                    ProgressBar bar = (ProgressBar)findViewById(R.id.progressBar_monitor);
+                    if (bar != null)
+                        bar.setProgress((int)((float)bar.getMax() * maxVolume));
+                }
+            });
+        }
+
+        recorder.release();
+        Log.i(TAG, "Exiting recorder thread");
     }
 
     public void onFragmentInteraction(int param){

@@ -32,6 +32,16 @@
                 android:id="@+id/button_clear" />
         </LinearLayout>
 
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar_monitor"
+            android:progress="500"
+            android:max="1000"
+            android:indeterminate="false"
+            android:theme="@android:style/Theme.Material" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
