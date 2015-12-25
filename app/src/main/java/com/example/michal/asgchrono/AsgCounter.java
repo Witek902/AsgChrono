@@ -171,7 +171,7 @@ public class AsgCounter {
 	    return (float)(maxID + offset) + x;
 	}
 
-	void Analyze()
+	boolean Analyze()
 	{
 	    // calculate buffer RMS
 	    float rms = 0.0f;
@@ -195,13 +195,14 @@ public class AsgCounter {
 	        warmup = false;
 	        samplePos += BUFFER_SIZE;
 	        sampleInCurState += BUFFER_SIZE;
-	        return;
+	        return false;
 	    }
 
 	    rms = averageRMS;
 	    final float tresholdOffset = 0.001f;
 	    float treshold = config.detectionSigma * rms + tresholdOffset;
 
+		boolean peakFound = false;
 	    for (int i = 0; i < BUFFER_SIZE; ++i)
 	    {
 	        float sample = buffer[i];
@@ -253,6 +254,7 @@ public class AsgCounter {
 	                // distance between peaks is too large - ignore it
 	                firstPeakEstimation = peakSearchStart[0] + FindPeakInHistory();
 	                ReportPeaksGroup(firstPeakEstimation, -1.0f);
+					peakFound = true;
 	                state = AsgCounterState.BeforePeak;
 	            }
 	        }
@@ -262,6 +264,7 @@ public class AsgCounter {
 	            {
 	                float secondPeakEstimation = peakSearchStart[1] + FindPeakInHistory();
 	                ReportPeaksGroup(firstPeakEstimation, secondPeakEstimation);
+					peakFound = true;
 	                state = AsgCounterState.BeforePeak;
 	            }
 	            else
@@ -272,19 +275,23 @@ public class AsgCounter {
 	        sampleInCurState++;
 	    }
 
-	    // printf("RMS = %f, treshold = %f\n", rms, treshold);
+	    return peakFound;
 	}
 
-	void ProcessBuffer(float[] samples, int samplesNum)
+	boolean ProcessBuffer(float[] samples, int samplesNum)
 	{
+		boolean peakFound = false;
+
 	    for (int i = 0; i < samplesNum; ++i)
 	    {
 	        buffer[bufferPtr++] = samples[i];
 	        if (bufferPtr == BUFFER_SIZE)
 	        {
-	            Analyze();
+				peakFound |= Analyze();
 	            bufferPtr = 0;
 	        }
 	    }
+
+		return peakFound;
 	}
 }

@@ -3,36 +3,36 @@
 
     <PreferenceCategory
         android:title="Measurement options">
-        <Preference
+        <com.example.michal.asgchrono.NumberPickerPreference
             android:key="bb_mass_preference"
             android:numeric="decimal"
             android:title="BB mass"
             android:summary="BB mass in grams" />
-        <Preference
+        <com.example.michal.asgchrono.NumberPickerPreference
             android:key="detector_length"
             android:numeric="decimal"
             android:title="Detector length"
-            android:summary="Distance between phototransistors in centimeters" />
+            android:summary="Distance between sensors in centimeters" />
     </PreferenceCategory>
 
     <PreferenceCategory
         android:title="Detection options">
-        <Preference
+        <com.example.michal.asgchrono.NumberPickerPreference
             android:key="min_velocity_option"
             android:numeric="decimal"
             android:title="Min. velocity"
             android:summary="Minimum detected velocity in ft/s" />
-        <Preference
+        <com.example.michal.asgchrono.NumberPickerPreference
             android:key="max_velocity_option"
             android:numeric="decimal"
             android:title="Max. velocity"
             android:summary="Maximum detected velocity in ft/s" />
-        <Preference
+        <com.example.michal.asgchrono.NumberPickerPreference
             android:key="peak_detection_threshold_option"
             android:numeric="decimal"
             android:title="Peak detection threshold"
             android:summary="A value (in multiplies of RMS) above which signal peak is detected" />
-        <Preference
+        <com.example.michal.asgchrono.NumberPickerPreference
             android:key="fire_rate_threshold_option"
             android:numeric="decimal"
             android:title="Fire rate threshold"

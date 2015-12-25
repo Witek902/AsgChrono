@@ -1,5 +1,6 @@
 package com.example.michal.asgchrono;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,12 +16,15 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 public class MainActivity
         extends AppCompatActivity
-        implements HistoryFragment.OnFragmentInteractionListener
+        implements HistoryFragment.OnFragmentInteractionListener, MeasureFragment.MeasureFragmentInteractionListener
 {
     public final String TAG = "AsgChrono";
+
+    public final double METERS_TO_FEETS = 3.2808;
 
     /// recorder constants
     private static final int RECORDER_SAMPLERATE = 44100;
@@ -51,6 +55,7 @@ public class MainActivity
         tabLayout.setupWithViewPager(mViewPager);
 
         mAsgCounter = new AsgCounter();
+        mAsgCounter.config.sampleRate = (float)RECORDER_SAMPLERATE;
         startRecording();
     }
 
@@ -77,6 +82,8 @@ public class MainActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -124,6 +131,8 @@ public class MainActivity
         recorder.startRecording();
 
         short sData[] = new short[BufferElements2Rec];
+        float fData[] = new float[BufferElements2Rec];
+
         Log.i(TAG, "Recording started...");
 
         while (isRecording) {
@@ -134,19 +143,34 @@ public class MainActivity
 
             maxVolume = 0.0f;
             for (int i = 0; i < BufferElements2Rec; ++i) {
-                float sample = (float)sData[i];
+                float sample = (float)sData[i] / 32768.0f;
+                fData[i] = sample;
                 if (sample > maxVolume)
                     maxVolume = sample;
             }
-            maxVolume /= 32768.0f;
+
+            boolean needUpdate = false;
+            synchronized (mAsgCounter) {
+                needUpdate = mAsgCounter.ProcessBuffer(fData, BufferElements2Rec);
+            }
+
+            if (needUpdate) {
+                // update GUI
+                mViewPager.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateStats();
+                    }
+                });
+            }
 
             // update GUI
             mViewPager.post(new Runnable() {
                 @Override
                 public void run() {
-                    ProgressBar bar = (ProgressBar)findViewById(R.id.progressBar_monitor);
+                    ProgressBar bar = (ProgressBar) findViewById(R.id.progressBar_monitor);
                     if (bar != null)
-                        bar.setProgress((int)((float)bar.getMax() * maxVolume));
+                        bar.setProgress((int) ((float) bar.getMax() * maxVolume));
                 }
             });
         }
@@ -155,8 +179,50 @@ public class MainActivity
         Log.i(TAG, "Exiting recorder thread");
     }
 
+    private void resetCounter() {
+        synchronized (mAsgCounter) {
+            mAsgCounter.Reset();
+        }
+
+        // update GUI
+        mViewPager.post(new Runnable() {
+            @Override
+            public void run() {
+                updateStats();
+            }
+        });
+    }
+
+    private void updateStats() {
+
+        // TODO: this function should only update GUI
+        AsgStats stats = mAsgCounter.stats;
+        synchronized (mAsgCounter) {
+            mAsgCounter.stats.Calc(mAsgCounter.config);
+        }
+
+        TextView velocityTextView = (TextView) findViewById(R.id.textView_velocity);
+        if (velocityTextView != null)
+            if (stats.velocityAvg > 0.0)
+                velocityTextView.setText(String.format("%.1f", stats.velocityAvg * METERS_TO_FEETS));
+            else
+                velocityTextView.setText(R.string.not_analyzed_text);
+
+        TextView fireRateTextView = (TextView) findViewById(R.id.textView_firerate);
+        if (fireRateTextView != null)
+            if (stats.fireRateAvg > 0.0)
+                fireRateTextView.setText(String.format("%.1f", stats.fireRateAvg * 60.0));
+            else
+                fireRateTextView.setText(R.string.not_analyzed_text);
+    }
+
     public void onFragmentInteraction(int param){
-        // TODO: fragments interaction
+        // TODO
+    }
+
+    public void onMeasureFragmentInteraction(int param){
+        if (param == 123)
+            resetCounter();
     }
 
     /**
@@ -180,16 +246,6 @@ public class MainActivity
                     return HistoryFragment.newInstance();
                 case 2:
                     return HistoryFragment.newInstance();
-                /*
-                    return new PreferenceFragment() {
-                        @Override
-                        public void onCreate(Bundle savedInstanceState) {
-                            super.onCreate(savedInstanceState);
-                            addPreferencesFromResource(R.xml.setup_preference);
-                        }
-                    };
-                    */
-
             }
             return null;
         }
