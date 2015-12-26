@@ -15,8 +15,12 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class MainActivity
         extends AppCompatActivity
@@ -25,6 +29,7 @@ public class MainActivity
     public final String TAG = "AsgChrono";
 
     public final double METERS_TO_FEETS = 3.2808;
+    public final double SECS_TO_MINS = 60.0;
 
     /// recorder constants
     private static final int RECORDER_SAMPLERATE = 44100;
@@ -201,19 +206,72 @@ public class MainActivity
             mAsgCounter.stats.Calc(mAsgCounter.config);
         }
 
-        TextView velocityTextView = (TextView) findViewById(R.id.textView_velocity);
-        if (velocityTextView != null)
-            if (stats.velocityAvg > 0.0)
-                velocityTextView.setText(String.format("%.1f", stats.velocityAvg * METERS_TO_FEETS));
-            else
-                velocityTextView.setText(R.string.not_analyzed_text);
+        TextView textView;
 
-        TextView fireRateTextView = (TextView) findViewById(R.id.textView_firerate);
-        if (fireRateTextView != null)
-            if (stats.fireRateAvg > 0.0)
-                fireRateTextView.setText(String.format("%.1f", stats.fireRateAvg * 60.0));
+        // velocity stats
+
+        textView = (TextView) findViewById(R.id.textView_velocity);
+        if (textView != null)
+            if (stats.velocityAvg > 0.0)
+                textView.setText(String.format("%.1f", stats.velocityAvg * METERS_TO_FEETS));
             else
-                fireRateTextView.setText(R.string.not_analyzed_text);
+                textView.setText(R.string.not_analyzed_text);
+
+        textView = (TextView) findViewById(R.id.textView_min_velocity);
+        if (textView != null)
+            if (stats.velocityAvg > 0.0)
+                textView.setText(String.format("%.1f", stats.velocityMin * METERS_TO_FEETS));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        textView = (TextView) findViewById(R.id.textView_max_velocity);
+        if (textView != null)
+            if (stats.velocityAvg > 0.0)
+                textView.setText(String.format("%.1f", stats.velocityMax * METERS_TO_FEETS));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        textView = (TextView) findViewById(R.id.textView_std_velocity);
+        if (textView != null)
+            if (stats.velocityAvg > 0.0)
+                textView.setText(String.format("%.2f", stats.velocityStdDev * METERS_TO_FEETS));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        // fire rate stats
+
+        textView = (TextView) findViewById(R.id.textView_firerate);
+        if (textView != null)
+            if (stats.fireRateAvg > 0.0)
+                textView.setText(String.format("%.1f", stats.fireRateAvg * SECS_TO_MINS));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        textView = (TextView) findViewById(R.id.textView_min_firerate);
+        if (textView != null)
+            if (stats.fireRateAvg > 0.0)
+                textView.setText(String.format("%.1f", stats.fireRateMin * SECS_TO_MINS));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        textView = (TextView) findViewById(R.id.textView_max_firerate);
+        if (textView != null)
+            if (stats.fireRateAvg > 0.0)
+                textView.setText(String.format("%.1f", stats.fireRateMax * SECS_TO_MINS));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        // misc stats
+
+        // TODO
+
+        ListView list = (ListView) findViewById(R.id.listView_history);
+        ArrayList<String> stringsList = new ArrayList<>();
+        for (int i = 0; i < stats.history.size(); ++i)
+            stringsList.add(String.format("#%-3d %10.1f %10.1f", i, stats.history.get(i).velocity,
+                                          stats.history.get(i).deltaTime));
+
+        list.setAdapter(new ArrayAdapter<String>(this, R.layout.sample_row, stringsList));
     }
 
     public void onFragmentInteraction(int param){

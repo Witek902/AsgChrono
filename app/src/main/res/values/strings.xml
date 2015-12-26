@@ -6,8 +6,27 @@
     <string name="clear_button_text">Clear</string>
     <string name="save_button_text">Save</string>
 
-    <string name="velocity_title">Velocity [ft/s]:</string>
-    <string name="fire_rate_title">Fire rate [1/min]:</string>
+    <!-- units -->
+    <string name="unit_velocity">ft/s</string>
+    <string name="unit_firerate">/min</string>
+    <string name="unit_energy">J</string>
+    <string name="unit_power">W</string>
+
+    <!-- velocity -->
+    <string name="velocity_title">Avg. velocity:</string>
+    <string name="min_velocity_title">Min. velocity:</string>
+    <string name="max_velocity_title">Max. velocity:</string>
+    <string name="std_velocity_title">Velocity std. dev.:</string>
+
+    <!-- fire rate -->
+    <string name="fire_rate_title">Avg. fire rate:</string>
+    <string name="min_fire_rate_title">Min. fire rate:</string>
+    <string name="max_fire_rate_title">Max. fire rate:</string>
+
+    <!-- misc -->
+    <string name="bullet_energy_title">Energy:</string>
+    <string name="bullet_power_title">Power:</string>
+
     <string name="measure_history_title">Samples history:</string>
     <string name="not_analyzed_text">N/A</string>
 
