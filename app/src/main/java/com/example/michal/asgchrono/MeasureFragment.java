@@ -8,12 +8,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 public class MeasureFragment extends Fragment
 {
     public interface MeasureFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onMeasureFragmentInteraction(int param);
+        void onResetButtonClicked();
+        void onSaveButtonClicked();
     }
 
     private MeasureFragmentInteractionListener mListener;
@@ -64,14 +67,14 @@ public class MeasureFragment extends Fragment
         final Button clearButton = (Button) view.findViewById(R.id.button_clear);
         clearButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mListener.onMeasureFragmentInteraction(123);
-                // resetCounter();
+                mListener.onResetButtonClicked();
             }
         });
 
         final Button saveButton = (Button) view.findViewById(R.id.button_save);
         saveButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                mListener.onSaveButtonClicked();
             }
         });
     }

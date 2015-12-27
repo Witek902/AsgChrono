@@ -7,10 +7,11 @@
     <ListView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/listView"
+        android:id="@+id/listView_history"
         android:layout_gravity="center"
         android:footerDividersEnabled="false"
         android:focusableInTouchMode="false"
         android:focusable="false"
-        android:headerDividersEnabled="false" />
+        android:headerDividersEnabled="false"
+        android:choiceMode="singleChoice" />
 </FrameLayout>

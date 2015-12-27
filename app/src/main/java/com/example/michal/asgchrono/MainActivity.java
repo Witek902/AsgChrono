@@ -1,11 +1,14 @@
 package com.example.michal.asgchrono;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
@@ -15,17 +18,27 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity
         extends AppCompatActivity
         implements HistoryFragment.OnFragmentInteractionListener, MeasureFragment.MeasureFragmentInteractionListener
 {
+    public static int PARAM_RESET = 0;
+    public static int PARAM_SAVE = 1;
+    public static int PARAM_SHOW_ADVANCED_VIEW = 2;
+    public static int PARAM_HIDE_ADVANCED_VIEW = 3;
+
     public final String TAG = "AsgChrono";
 
     public final double METERS_TO_FEETS = 3.2808;
@@ -43,6 +56,7 @@ public class MainActivity
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private AsgCounter mAsgCounter;
+    private List<HistoryEntry> mHistoryList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +69,9 @@ public class MainActivity
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager)findViewById(R.id.container);
         mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
+
+        // TODO: load from file
+        mHistoryList = new ArrayList<>();
 
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -265,7 +282,7 @@ public class MainActivity
 
         // TODO
 
-        ListView list = (ListView) findViewById(R.id.listView_history);
+        ListView list = (ListView) findViewById(R.id.listView_sampleHistory);
         ArrayList<String> stringsList = new ArrayList<>();
         for (int i = 0; i < stats.history.size(); ++i)
             stringsList.add(String.format("#%-3d %10.1f %10.1f", i, stats.history.get(i).velocity,
@@ -278,9 +295,39 @@ public class MainActivity
         // TODO
     }
 
-    public void onMeasureFragmentInteraction(int param){
-        if (param == 123)
-            resetCounter();
+
+    public void onResetButtonClicked() {
+        resetCounter();
+    }
+
+    public void onSaveButtonClicked() {
+
+        final Context context = this;
+        final AsgStats stats = mAsgCounter.stats;
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Save measurement");
+        alert.setMessage("Enter name:");
+
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                mHistoryList.add(new HistoryEntry(input.getText().toString(), stats.velocityAvg, stats.fireRateAvg));
+
+                ListView listView = (ListView) findViewById(R.id.listView_history);
+                HistoryViewAdapter adapter = new HistoryViewAdapter(context, R.layout.history_row, mHistoryList);
+                listView.setAdapter(adapter);
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+
+        alert.show();
     }
 
     /**
@@ -302,15 +349,13 @@ public class MainActivity
                     return MeasureFragment.newInstance();
                 case 1:
                     return HistoryFragment.newInstance();
-                case 2:
-                    return HistoryFragment.newInstance();
             }
             return null;
         }
 
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
 
         @Override
