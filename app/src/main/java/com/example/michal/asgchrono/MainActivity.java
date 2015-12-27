@@ -53,10 +53,15 @@ public class MainActivity
     private Thread recordingThread = null;
     private volatile boolean isRecording = false;
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private AsgCounter mAsgCounter;
     private List<HistoryEntry> mHistoryList;
+    private HistoryViewAdapter mHisoryViewAdapter;
+
+    public HistoryViewAdapter getHistoryViewAdapter()
+    {
+        return mHisoryViewAdapter;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +77,7 @@ public class MainActivity
 
         // TODO: load from file
         mHistoryList = new ArrayList<>();
+        mHisoryViewAdapter = new HistoryViewAdapter(this, R.layout.history_row, mHistoryList);
 
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -291,8 +297,9 @@ public class MainActivity
         list.setAdapter(new ArrayAdapter<String>(this, R.layout.sample_row, stringsList));
     }
 
-    public void onFragmentInteraction(int param){
-        // TODO
+    public void onHistoryEntryRemove(int index){
+        mHistoryList.remove(index);
+        mHisoryViewAdapter.notifyDataSetChanged();
     }
 
 
@@ -315,10 +322,7 @@ public class MainActivity
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 mHistoryList.add(new HistoryEntry(input.getText().toString(), stats.velocityAvg, stats.fireRateAvg));
-
-                ListView listView = (ListView) findViewById(R.id.listView_history);
-                HistoryViewAdapter adapter = new HistoryViewAdapter(context, R.layout.history_row, mHistoryList);
-                listView.setAdapter(adapter);
+                mHisoryViewAdapter.notifyDataSetChanged();
             }
         });
 

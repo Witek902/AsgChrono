@@ -76,8 +76,12 @@ public class HistoryFragment extends Fragment {
 
     private void setUp(View view) {
         ListView lv = (ListView) view.findViewById(R.id.listView_history);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+
+        MainActivity activity = (MainActivity)getActivity();
+        lv.setAdapter(activity.getHistoryViewAdapter());
+
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
                 AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
                 adb.setTitle("Delete?");
                 adb.setMessage("Are you sure you want to delete " + position);
@@ -85,15 +89,16 @@ public class HistoryFragment extends Fragment {
                 adb.setNegativeButton("Cancel", null);
                 adb.setPositiveButton("Ok", new AlertDialog.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // update list, notify adapter
-                    }});
+                        mListener.onHistoryEntryRemove(positionToRemove);
+                    }
+                });
                 adb.show();
+                return true;
             }
         });
     }
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(int param);
+        void onHistoryEntryRemove(int index);
     }
 }
