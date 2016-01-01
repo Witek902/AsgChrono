@@ -1,8 +1,11 @@
 package com.example.michal.asgchrono;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,25 +21,19 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TableLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +41,10 @@ import java.util.Scanner;
 
 public class MainActivity
         extends AppCompatActivity
-        implements HistoryFragment.OnFragmentInteractionListener, MeasureFragment.MeasureFragmentInteractionListener
+        implements
+            HistoryFragment.OnFragmentInteractionListener,
+            MeasureFragment.MeasureFragmentInteractionListener,
+            SharedPreferences.OnSharedPreferenceChangeListener
 {
     public static int PARAM_RESET = 0;
     public static int PARAM_SAVE = 1;
@@ -98,6 +98,10 @@ public class MainActivity
         mAsgCounter = new AsgCounter();
         mAsgCounter.config.sampleRate = (float)RECORDER_SAMPLERATE;
         startRecording();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.registerOnSharedPreferenceChangeListener(this);
+        onSharedPreferenceChanged(prefs, null);  // force config update
     }
 
     @Override
@@ -290,6 +294,7 @@ public class MainActivity
 
     private void updateStats() {
         AsgStats stats = mAsgCounter.stats;
+        AsgCounterConfig config = mAsgCounter.config;
         synchronized (mAsgCounter) {
             mAsgCounter.stats.Calc(mAsgCounter.config);
         }
@@ -351,15 +356,29 @@ public class MainActivity
 
         // misc stats
 
-        // TODO
+        textView = (TextView) findViewById(R.id.textView_energy);
+        if (textView != null)
+            if (stats.velocityAvg > 0.0)
+                textView.setText(String.format("%.3f", 0.5 * stats.velocityAvg * stats.velocityAvg * config.mass));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
+        textView = (TextView) findViewById(R.id.textView_power);
+        if (textView != null)
+            if (stats.fireRateAvg > 0.0 && stats.velocityAvg > 0.0)
+                textView.setText(String.format("%.3f", 0.5 * stats.velocityAvg * stats.velocityAvg * config.mass * stats.fireRateAvg));
+            else
+                textView.setText(R.string.not_analyzed_text);
+
 
         ListView list = (ListView) findViewById(R.id.listView_sampleHistory);
-        ArrayList<String> stringsList = new ArrayList<>();
-        for (int i = 0; i < stats.history.size(); ++i)
-            stringsList.add(String.format("#%-3d %10.1f %10.1f", i, stats.history.get(i).velocity,
-                                          stats.history.get(i).deltaTime));
-
-        list.setAdapter(new ArrayAdapter<String>(this, R.layout.sample_row, stringsList));
+        if (list != null) {
+            ArrayList<String> stringsList = new ArrayList<>();
+            for (int i = 0; i < stats.history.size(); ++i)
+                stringsList.add(String.format("#%-3d %10.1f %10.1f", i, stats.history.get(i).velocity,
+                        stats.history.get(i).deltaTime));
+            list.setAdapter(new ArrayAdapter<String>(this, R.layout.sample_row, stringsList));
+        }
     }
 
     public void onHistoryEntryRemove(int index){
@@ -397,6 +416,29 @@ public class MainActivity
         });
 
         alert.show();
+    }
+
+    // handle updates to preferences
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        double mass = Double.parseDouble((prefs.getString("bb_mass_preference", "0.2")));
+        double length = Double.parseDouble((prefs.getString("detector_length_preference", "20.0")));
+        double min_velocity = Double.parseDouble((prefs.getString("min_velocity_preference", "100.0")));
+        double max_velocity = Double.parseDouble((prefs.getString("max_velocity_preference", "600.0")));
+        double peak_threshold = Double.parseDouble((prefs.getString("peak_detection_threshold_preference", "7.0")));
+        double fire_rate_threshold = Double.parseDouble((prefs.getString("fire_rate_threshold_preference", "1.3")));
+
+        synchronized (mAsgCounter) {
+            mAsgCounter.config.mass = (float)(0.001 * mass);
+            mAsgCounter.config.detectionSigma = (float)peak_threshold;
+            mAsgCounter.config.fireRateTreshold = (float)fire_rate_threshold;
+            mAsgCounter.config.length = (float)(0.01 * length);
+            mAsgCounter.config.maxPeakDistance = (int)(mAsgCounter.config.length * METERS_TO_FEETS * RECORDER_SAMPLERATE / min_velocity);
+            mAsgCounter.config.minPeakDistance = (int)(mAsgCounter.config.length * METERS_TO_FEETS * RECORDER_SAMPLERATE / max_velocity);
+
+            Log.i(TAG, "Config updated: " + mAsgCounter.config.toString());
+        }
+
+        resetCounter();
     }
 
     /**

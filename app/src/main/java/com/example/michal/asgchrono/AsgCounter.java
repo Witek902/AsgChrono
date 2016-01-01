@@ -30,12 +30,11 @@ public class AsgCounter {
 	public AsgCounter()
 	{
 	    buffer = new float [BUFFER_SIZE];
-	    Reset();
+        config = new AsgCounterConfig();
 	}
 
 	public void Reset()
 	{
-		config = new AsgCounterConfig();
 		stats = new AsgStats();
 		
 	    warmup = true;
@@ -165,8 +164,6 @@ public class AsgCounter {
 	            y = iy1;
 	        }
 	    }
-
-	    // printf("  y0 = %6.3f, y1 = %6.3f, y2 = %6.3f, y3 = %6.3f  =>  y(%.2f) = %.2f\n", y0, y1, y2, y3, x, y);
 
 	    return (float)(maxID + offset) + x;
 	}

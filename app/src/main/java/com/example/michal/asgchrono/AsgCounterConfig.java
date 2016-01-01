@@ -26,4 +26,11 @@ public class AsgCounterConfig {
         fireRateTreshold = 1.25f;
         detectionSigma = 7.0f;
     }
+
+    public String toString() {
+        return String.format("minPeakDistance: %d, maxPeakDistance: %d, sampleRate: %f, length: %f, " +
+                             "mass: %f, detectionSigma: %f, fireRateTreshold: %f",
+                             minPeakDistance, maxPeakDistance, sampleRate, length, mass,
+                             detectionSigma, fireRateTreshold);
+    }
 }

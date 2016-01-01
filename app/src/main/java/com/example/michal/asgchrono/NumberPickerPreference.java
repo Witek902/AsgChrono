@@ -1,85 +1,37 @@
 package com.example.michal.asgchrono;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.preference.DialogPreference;
 import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.SeekBar;
+import android.preference.EditTextPreference;
+import android.text.TextUtils;
 
-/**
- * A {@link android.preference.Preference} that displays a number picker as a dialog.
- */
-public class NumberPickerPreference extends DialogPreference {
+public class NumberPickerPreference extends EditTextPreference {
 
-    // allowed range
-    public static final int MAX_VALUE = 100;
-
-    private SeekBar seekBar;
-    private int value;
+    public NumberPickerPreference(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+    }
 
     public NumberPickerPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public NumberPickerPreference(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    public NumberPickerPreference(Context context) {
+        super(context);
     }
 
+    // According to ListPreference implementation
     @Override
-    protected View onCreateDialogView() {
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.CENTER;
-
-        seekBar = new SeekBar(getContext());
-        seekBar.setLayoutParams(layoutParams);
-        FrameLayout dialogView = new FrameLayout(getContext());
-        dialogView.addView(seekBar);
-
-        return dialogView;
-    }
-
-    @Override
-    protected void onBindDialogView(View view) {
-        super.onBindDialogView(view);
-        seekBar.setMax(MAX_VALUE);
-        seekBar.setProgress(getValue());
-    }
-
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            seekBar.clearFocus();
-            int newValue = seekBar.getProgress();
-            if (callChangeListener(newValue)) {
-                setValue(newValue);
+    public CharSequence getSummary() {
+        String text = getText();
+        if (TextUtils.isEmpty(text)) {
+            return getEditText().getHint();
+        } else {
+            CharSequence summary = super.getSummary();
+            if (summary != null) {
+                return String.format(summary.toString(), text);
+            } else {
+                return null;
             }
         }
-    }
-
-    @Override
-    protected Object onGetDefaultValue(TypedArray a, int index) {
-        return a.getInt(index, 0);
-    }
-
-    @Override
-    protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
-        if (restorePersistedValue)
-            setValue(getPersistedInt(0));
-        else
-            setValue((Integer)defaultValue);
-    }
-
-    public void setValue(int value) {
-        this.value = value;
-        persistInt(this.value);
-    }
-
-    public int getValue() {
-        return this.value;
     }
 }

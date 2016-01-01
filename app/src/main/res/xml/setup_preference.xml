@@ -6,37 +6,43 @@
         <com.example.michal.asgchrono.NumberPickerPreference
             android:key="bb_mass_preference"
             android:numeric="decimal"
-            android:title="BB mass"
-            android:summary="BB mass in grams" />
+            android:title="BB mass (in grams)"
+            android:summary="%1$s"
+            android:defaultValue="0.2" />
         <com.example.michal.asgchrono.NumberPickerPreference
-            android:key="detector_length"
+            android:key="detector_length_preference"
             android:numeric="decimal"
-            android:title="Detector length"
-            android:summary="Distance between sensors in centimeters" />
+            android:title="Detector length (in centimeters)"
+            android:summary="%1$s"
+            android:defaultValue="20.0"/>
     </PreferenceCategory>
 
     <PreferenceCategory
         android:title="Detection options">
         <com.example.michal.asgchrono.NumberPickerPreference
-            android:key="min_velocity_option"
+            android:key="min_velocity_preference"
             android:numeric="decimal"
-            android:title="Min. velocity"
-            android:summary="Minimum detected velocity in ft/s" />
+            android:title="Min. detected velocity (in ft/s)"
+            android:summary="%1$s"
+            android:defaultValue="100.0" />
         <com.example.michal.asgchrono.NumberPickerPreference
-            android:key="max_velocity_option"
+            android:key="max_velocity_preference"
             android:numeric="decimal"
-            android:title="Max. velocity"
-            android:summary="Maximum detected velocity in ft/s" />
+            android:title="Max. detected velocity (in ft/s)"
+            android:summary="%1$s"
+            android:defaultValue="600.0" />
         <com.example.michal.asgchrono.NumberPickerPreference
-            android:key="peak_detection_threshold_option"
+            android:key="peak_detection_threshold_preference"
             android:numeric="decimal"
             android:title="Peak detection threshold"
-            android:summary="A value (in multiplies of RMS) above which signal peak is detected" />
+            android:summary="%1$s"
+            android:defaultValue="7.0" />
         <com.example.michal.asgchrono.NumberPickerPreference
-            android:key="fire_rate_threshold_option"
+            android:key="fire_rate_threshold_preference"
             android:numeric="decimal"
             android:title="Fire rate threshold"
-            android:summary="Maximum time difference between peaks in one fire burst" />
+            android:summary="%1$s"
+            android:defaultValue="1.3" />
     </PreferenceCategory>
 
 </PreferenceScreen> 

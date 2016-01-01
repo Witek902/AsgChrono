@@ -14,7 +14,6 @@ import android.widget.CompoundButton;
 public class MeasureFragment extends Fragment
 {
     public interface MeasureFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onResetButtonClicked();
         void onSaveButtonClicked();
     }
