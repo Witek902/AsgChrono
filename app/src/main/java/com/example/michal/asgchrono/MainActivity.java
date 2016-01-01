@@ -27,8 +27,20 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 
 public class MainActivity
         extends AppCompatActivity
@@ -39,6 +51,7 @@ public class MainActivity
     public static int PARAM_SHOW_ADVANCED_VIEW = 2;
     public static int PARAM_HIDE_ADVANCED_VIEW = 3;
 
+    public final String HISTORY_FILE_NAME = "history.dat";
     public final String TAG = "AsgChrono";
 
     public final double METERS_TO_FEETS = 3.2808;
@@ -75,8 +88,8 @@ public class MainActivity
         mViewPager = (ViewPager)findViewById(R.id.container);
         mViewPager.setAdapter(new SectionsPagerAdapter(getSupportFragmentManager()));
 
-        // TODO: load from file
         mHistoryList = new ArrayList<>();
+        loadHistory();
         mHisoryViewAdapter = new HistoryViewAdapter(this, R.layout.history_row, mHistoryList);
 
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
@@ -92,6 +105,7 @@ public class MainActivity
     {
         super.onDestroy();
         stopRecording();
+        saveHistory();
     }
 
     @Override
@@ -116,6 +130,59 @@ public class MainActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    void saveHistory() {
+        Log.d(TAG, "Saving history");
+        try {
+            FileOutputStream fos = openFileOutput(HISTORY_FILE_NAME, Context.MODE_PRIVATE);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+
+            osw.write(Integer.toString(mHistoryList.size()) + "\n");
+            for (HistoryEntry entry : mHistoryList)
+                osw.write(entry.toString()+ "\n");
+
+            osw.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "History file not found");
+        } catch (IOException e) {
+            Log.e(TAG, "IO exception occurred");
+        }
+    }
+
+    void loadHistory() {
+        Log.d(TAG, "Loading history");
+        try {
+            FileInputStream fis = openFileInput(HISTORY_FILE_NAME);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+
+            String line = br.readLine();
+            if (line == null) {
+                Log.e(TAG, "History file read error");
+                return;
+            }
+
+            int num = Integer.parseInt(line);
+            for (int i = 0; i < num; i++) {
+                line = br.readLine();
+                if (line == null)
+                    return;
+                Scanner scanner = new Scanner(line).useLocale(Locale.US);
+                String name = scanner.next();
+                double velocity = scanner.nextDouble();
+                double fireRate = scanner.nextDouble();
+                HistoryEntry entry = new HistoryEntry(name, velocity, fireRate);
+                mHistoryList.add(entry);
+            }
+
+            isr.close();
+            fis.close();
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "History file not found");
+        } catch (IOException e) {
+            Log.d(TAG, "IO exception occurred");
+        }
     }
 
     int BufferElements2Rec = 1024;  // want to play 2048 (2K) since 2 bytes we use only 1024
@@ -222,8 +289,6 @@ public class MainActivity
     }
 
     private void updateStats() {
-
-        // TODO: this function should only update GUI
         AsgStats stats = mAsgCounter.stats;
         synchronized (mAsgCounter) {
             mAsgCounter.stats.Calc(mAsgCounter.config);

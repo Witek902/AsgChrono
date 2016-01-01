@@ -10,4 +10,9 @@ public class HistoryEntry {
         this.velocity = velocity;
         this.fireRate = fireRate;
     }
+
+    public String toString()
+    {
+        return name + " " + Double.toString(velocity) + " " + Double.toString(fireRate);
+    }
 }
