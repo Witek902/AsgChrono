@@ -46,11 +46,6 @@ public class MainActivity
             MeasureFragment.MeasureFragmentInteractionListener,
             SharedPreferences.OnSharedPreferenceChangeListener
 {
-    public static int PARAM_RESET = 0;
-    public static int PARAM_SAVE = 1;
-    public static int PARAM_SHOW_ADVANCED_VIEW = 2;
-    public static int PARAM_HIDE_ADVANCED_VIEW = 3;
-
     public final String HISTORY_FILE_NAME = "history.dat";
     public final String TAG = "AsgChrono";
 
@@ -375,7 +370,7 @@ public class MainActivity
         if (list != null) {
             ArrayList<String> stringsList = new ArrayList<>();
             for (int i = 0; i < stats.history.size(); ++i)
-                stringsList.add(String.format("#%-3d %10.1f %10.1f", i, stats.history.get(i).velocity,
+                stringsList.add(String.format("#%-3d %10.1f %10.3f", i, stats.history.get(i).velocity * METERS_TO_FEETS,
                         stats.history.get(i).deltaTime));
             list.setAdapter(new ArrayAdapter<String>(this, R.layout.sample_row, stringsList));
         }
@@ -405,7 +400,9 @@ public class MainActivity
 
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                mHistoryList.add(new HistoryEntry(input.getText().toString(), stats.velocityAvg, stats.fireRateAvg));
+                mHistoryList.add(new HistoryEntry(input.getText().toString(),
+                        stats.velocityAvg * METERS_TO_FEETS,
+                        stats.fireRateAvg * SECS_TO_MINS));
                 mHisoryViewAdapter.notifyDataSetChanged();
             }
         });

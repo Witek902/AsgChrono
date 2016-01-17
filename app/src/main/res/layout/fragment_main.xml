@@ -20,13 +20,6 @@
             android:layout_height="wrap_content">
 
             <Button
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="DEBUG"
-                android:id="@+id/button_debug" />
-
-            <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/clear_button_text"

@@ -22,8 +22,8 @@ public class MeasureFragment extends Fragment
 
     public MeasureFragment() {}
 
-    public static MeasureFragment newInstance()
-    {
+    public static MeasureFragment newInstance() {
+
         MeasureFragment fragment = new MeasureFragment();
         fragment.setArguments(null);
         return fragment;
@@ -32,8 +32,8 @@ public class MeasureFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
-                             Bundle savedInstanceState)
-    {
+                             Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         setUpCallbacks(rootView);
         return rootView;
@@ -41,6 +41,7 @@ public class MeasureFragment extends Fragment
 
     @Override
     public void onAttach(Context context) {
+
         super.onAttach(context);
         if (context instanceof MeasureFragmentInteractionListener) {
             mListener = (MeasureFragmentInteractionListener) context;
@@ -57,11 +58,6 @@ public class MeasureFragment extends Fragment
     }
 
     private void setUpCallbacks(View view) {
-        final Button debugButton = (Button) view.findViewById(R.id.button_debug);
-        debugButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-            }
-        });
 
         final Button clearButton = (Button) view.findViewById(R.id.button_clear);
         clearButton.setOnClickListener(new View.OnClickListener() {
